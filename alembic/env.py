@@ -3,6 +3,7 @@ import os
 from dotenv import load_dotenv
 from app.database.base import Base
 from app.models.user import User
+from app.models.transaction import Transaction
 
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool

@@ -37,3 +37,11 @@ Holding the parent class for all database models.
 Later we'll write:
 class User(Base):
 Every table inherits from Base.
+
+VS CODE/GIT signs 
+Symbol	Meaning	What to do
+U	Untracked (new file)        	git add
+M	Modified	                    git add + git commit
+A	Added to staging	            Ready to commit
+D	Deleted	                        Commit if intentional
+• (dot)	Folder contains changed files	Just informational
