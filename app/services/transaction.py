@@ -93,3 +93,27 @@ def get_portfolio(
             })
 
     return result
+
+def get_portfolio_summary(
+    db: Session,
+    user_id: int
+):
+    transactions = (
+        db.query(Transaction)
+        .filter(Transaction.user_id == user_id)
+        .all()
+    )
+
+    portfolio = get_portfolio(db, user_id)
+
+    total_stocks = len(portfolio)
+    total_quantity = sum(
+        stock["quantity"] for stock in portfolio
+    )
+    total_transactions = len(transactions)
+
+    return {
+        "total_stocks": total_stocks,
+        "total_quantity": total_quantity,
+        "total_transactions": total_transactions
+    }

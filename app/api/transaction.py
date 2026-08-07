@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-
+from app.dependencies.auth import get_current_user
 from app.auth.jwt import verify_access_token
 from app.database.connection import get_db
 from app.models.user import User
@@ -11,10 +11,10 @@ from app.schemas.transaction import (
 from app.services.transaction import (
     create_transaction,
     get_transactions,
-    get_current_quantity,
-    get_portfolio
+    get_current_quantity
+    
 )
-from app.schemas.portfolio import PortfolioResponse
+
 from app.api.user import oauth2_scheme
 
 router = APIRouter(
@@ -30,18 +30,14 @@ router = APIRouter(
 )
 def buy_stock(
     transaction: TransactionCreate,
-    token: str = Depends(oauth2_scheme),
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    email = verify_access_token(token)
-
-    user = db.query(User).filter(
-        User.email == email
-    ).first()
+    
 
     return create_transaction(
         db=db,
-        user_id=user.id,
+        user_id=current_user.id,
         transaction=transaction,
         transaction_type="BUY"
     )
@@ -53,18 +49,14 @@ def buy_stock(
 )
 def sell_stock(
     transaction: TransactionCreate,
-    token: str = Depends(oauth2_scheme),
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    email = verify_access_token(token)
-
-    user = db.query(User).filter(
-        User.email == email
-    ).first()
+    
 
     current_quantity = get_current_quantity(
         db=db,
-        user_id=user.id,
+        user_id=current_user.id,
         symbol=transaction.symbol
     )
 
@@ -76,7 +68,7 @@ def sell_stock(
 
     return create_transaction(
         db=db,
-        user_id=user.id,
+        user_id=current_user.id,
         transaction=transaction,
         transaction_type="SELL"
     )
@@ -86,35 +78,13 @@ def sell_stock(
     response_model=list[TransactionResponse]
 )
 def get_user_transactions(
-    token: str = Depends(oauth2_scheme),
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    email = verify_access_token(token)
-
-    user = db.query(User).filter(
-        User.email == email
-    ).first()
+    
 
     return get_transactions(
         db=db,
-        user_id=user.id
+        user_id=current_user.id
     )
 
-@router.get(
-    "/portfolio",
-    response_model=list[PortfolioResponse]
-)
-def get_user_portfolio(
-    token: str = Depends(oauth2_scheme),
-    db: Session = Depends(get_db)
-):
-    email = verify_access_token(token)
-
-    user = db.query(User).filter(
-        User.email == email
-    ).first()
-
-    return get_portfolio(
-        db=db,
-        user_id=user.id
-    )
